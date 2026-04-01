@@ -1,5 +1,18 @@
-#include <vector>
+#ifndef CARDS_H
+#define CARDS_H
+
 #include <iostream>
+#include <ctime>
+#include <vector>
+#include <iomanip> // to help with the grid alignment with setw -- https://www.naukri.com/code360/library/setw-cpp
+#include <string> // for string anc converting int to string -- https://www.geeksforgeeks.org/cpp/converting-number-to-string-in-cpp/
+#define RESETCOLOR "\033[0m"
+#define YELLOW  "\033[33m"
+#define BLUE "\033[34m"
+#define RED "\033[31m"
+#define GREEN "\033[32m"
+#define PURPLE "\033[35m"
+#define LIGHT_BLUE "\033[36m"
 using namespace std;
 
 class Cards
@@ -12,20 +25,16 @@ public:
 	//Constructor
 	Cards();
 
-	//Destructor
-	~Cards();
-
 	//Getter
-	int getCard();
-
-	//Setter
-	void setCard();
+	int getGridValue(int row, int col);
+	bool getMarkedStatus(int row, int col);
 
 	//Function Members
 	void generateCard();
-	bool markNumber();
-	bool checkPatters();
-	string displayCards();
+	bool markNumber(int pulledNum);
+	bool checkPatterns();
+	void displayCards();
 
 };
 
+#endif
