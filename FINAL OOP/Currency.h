@@ -1,12 +1,19 @@
+#ifndef CURRENCY_H
+#define CURRENCY_H
+
 using namespace std;
 
 class Currency
 {
 private:
-    double balance;
+    double currentBalance;
+    double lastWinAmount;
 
 public:
-    void addFunds(int amount);
-    bool subtractFunds(int amount);
+    Currency(double start);
+    void subtractLoss(int amt);
+    void addWins(int amt);
+    double getBalance();
 };
 
+#endif CURRENCY_H
