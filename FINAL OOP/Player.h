@@ -8,7 +8,7 @@ using namespace std;
 class Player {
 private:
 	string playerName;
-	double balance;
+	Currency balance;
 	Card* cards;
 	int numCards;
 
@@ -32,6 +32,10 @@ public:
 	void generateCard(int n);
 	void displayCard();
 	void markNumber(int number);
+
+	//Balance functions
+	void addBalance(int amount);
+	void deductBalance(int amount);
 
 	//Player functions
 	bool hasWon();
