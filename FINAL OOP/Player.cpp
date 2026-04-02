@@ -1,17 +1,14 @@
 #include "Player.h"
 #include <iostream>
 
-Player::Player() {
+Player::Player() balance(100.0) {
 	playerName = "TBA";
-	balance = 1000;
 	cards = nullptr;
 	numCards = 0;
-
 }
 
  void Player::setName(string name) {
 	 playerName = name;
-
 }
 
  void Player::setBalance(double newbalance) {
@@ -23,7 +20,15 @@ Player::Player() {
  }
 
  double Player::getBalance() const { 
-	 return balance;
+	 return balance.getBalance();
+ }
+
+ void Player::addBalance(int amount) {
+	 balance.addWins(amount);
+ }
+
+ void Player::deductBalance(int amount) {
+	 balance.subtractLoss(amount);
  }
 
  int Player::getNumCards() const {
@@ -61,7 +66,7 @@ Player::Player() {
  void Player::displayProfile() {
 	 cout << "-------------------" << endl;
 	 cout << "Name: " << playerName << endl;
-	 cout << "Balance: " << balance << endl;
+	 cout << "Balance: " << balance.getBalance() << endl;
 	 cout << "-------------------" << endl;
 
  }
