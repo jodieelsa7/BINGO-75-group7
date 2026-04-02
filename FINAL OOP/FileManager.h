@@ -8,8 +8,8 @@
 
 class FileManager {
 private:
-    std::ofstream saveFile;     
-    std::ifstream loadFile;     
+    std::ofstream saveFile;     // to WRITE data to file
+    std::ifstream loadFile;     // to READ data from file
 
 // --------------------------------------------------------
 // ADDITIONAL ATTRIBUTES (not in UML but required)
@@ -20,7 +20,7 @@ private:
     // --------------------------------------------------------
     // HELPER PRIVATE
     // --------------------------------------------------------
-    std::string getCurrentTimestamp();  
+    std::string getCurrentTimestamp();  // Adding a timestamp to the activity log (via logEvent), so that every event in the program has time information
 
 public:
     FileManager(const std::string& directory = "saves/",
@@ -40,7 +40,8 @@ public:
     void loadGameData    (double& outBet, int& outDifficulty);
 
     // Utility
-    bool fileExists();
-    void logEvent    (const std::string& eventDesc);
-    bool validateFile();
+    // Additional functions to assist FileManager operations
+    bool fileExists();    // Checks if the save file already exists in the directory nd prevent errors when reading a non-existent file.
+    void logEvent    (const std::string& eventDesc);    //Logs an event to a log file (event_log.txt), usually accompanied by a timestamp from getCurrentTimestamp() so that each activity has clear time information.
+    bool validateFile();    //ensures the file's format and data are correct, thus preventing errors or crashes during loading.
 };
