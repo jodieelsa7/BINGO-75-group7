@@ -1,15 +1,15 @@
 #include "Currency.h"
 
 Currency::Currency(double start = 100.0) {
-  currentBalance(start);
-  lastWinAmount(0);
+  currentBalance = start;
+  lastWinAmount = 0;
   }
 
-void Currency::subtractLoss(int amt) {
+void Currency::subtractLoss(double amt) {
     currentBalance -= amt;
 }
 
-void Currency::addWins(int amt) {
+void Currency::addWins(double amt) {
     lastWinAmount = amt;
     currentBalance += amt;
 }
