@@ -1,18 +1,32 @@
 #include "FileManager.h"
+#include <filesystem>   // to create directories
 using namespace std;
 
+// ================================================================
+// CONSTRUCTOR
+// Initializes the save directory location and file name.
+// If the folder doesn't exist, it will be created automatically.
+// ==============================================================
 FileManager::FileManager(const string& directory, const string& file)
     : saveDirectory(directory), fileName(file)
 {
-    system(("mkdir -p " + saveDirectory).c_str());
-    cout << "[FileManager] Siap. File: " << saveDirectory + fileName << "\n";
+    std::filesystem::create_directories(saveDirectory);    // Create a directory to store game files and use the filesystem to run on all operating systems.
+    cout << "[FileManager] Finish. File: " << saveDirectory + fileName << "\n";
 }
 
+// =================================================================
+// DESTRUCTOR
+// Closes the file if it is still open
+// =============================================================
 FileManager::~FileManager() {
     if (saveFile.is_open()) saveFile.close();
     if (loadFile.is_open()) loadFile.close();
 }
 
+// ==================================================================
+// HELPER: getCurrentTimestamp
+// Gets the current time in string format
+// ================================================================
 string FileManager::getCurrentTimestamp() {
     time_t now = time(nullptr);
     char buf[20];
@@ -20,16 +34,21 @@ string FileManager::getCurrentTimestamp() {
     return string(buf);
 }
 
+// =================================================================
+// saveProfile(): Creates the initial structure of the save file
+// =============================================================
 void FileManager::saveProfile() {
     string path = saveDirectory + fileName;
 
     saveFile.open(path);
     if (!saveFile.is_open()) {
-        cerr << "[FileManager] ERROR: Tidak bisa membuka file: " << path << "\n";
+        cerr << "[FileManager] ERROR: Cannot open file: " << path << "\n";
         return;
     }
 
-    saveFile << "SAVED_AT=" << getCurrentTimestamp() << "\n";
+    saveFile << "SAVED_AT=" << getCurrentTimestamp() << "\n";     // Timestamp save
+    
+    // Section structure
     saveFile << "[PLAYER]\n";
     saveFile << "[CURRENCY]\n";
     saveFile << "[GAME]\n";
@@ -37,20 +56,24 @@ void FileManager::saveProfile() {
     saveFile << "[CARD]\n";
 
     saveFile.close();
-    cout << "[FileManager] saveProfile() selesai -> " << path << "\n";
+    cout << "[FileManager] saveProfile() finish -> " << path << "\n";
 }
 
+// =================================================================
+// loadProfile()
+// Reading file contents (debugging)
+// ===============================================================
 void FileManager::loadProfile() {
     string path = saveDirectory + fileName;
 
     if (!fileExists()) {
-        cerr << "[FileManager] ERROR: File tidak ditemukan: " << path << "\n";
+        cerr << "[FileManager] ERROR: File not found : " << path << "\n";
         return;
     }
 
     loadFile.open(path);
     if (!loadFile.is_open()) {
-        cerr << "[FileManager] ERROR: Tidak bisa membuka file: " << path << "\n";
+        cerr << "[FileManager] ERROR: Cannot open file: " << path << "\n";
         return;
     }
 
@@ -60,6 +83,7 @@ void FileManager::loadProfile() {
     while (getline(loadFile, line)) {
         if (line.empty()) continue;
 
+        // Detection section
         if (line[0] == '[') {
             currentSection = line;
             continue;
@@ -76,11 +100,15 @@ void FileManager::loadProfile() {
     }
 
     loadFile.close();
-    cout << "[FileManager] loadProfile() selesai.\n";
+    cout << "[FileManager] loadProfile() finish.\n";
 }
 
+// ============================================================
+// savePlayerData
+// ============================================================
 void FileManager::savePlayerData(const string& playerName, double balance) {
     string path = saveDirectory + fileName;
+    
     saveFile.open(path, ios::app);
     if (!saveFile.is_open()) return;
 
@@ -89,13 +117,17 @@ void FileManager::savePlayerData(const string& playerName, double balance) {
     saveFile << "BALANCE=" << balance    << "\n";
 
     saveFile.close();
-    cout << "[FileManager] Player '" << playerName << "' disimpan.\n";
+    cout << "[FileManager] Player '" << playerName << "' saved.\n";
 }
 
+// ============================================================
+// saveBallData
+// ============================================================
 void FileManager::saveBallData(const vector<int>& drawnNumbers,
                                int currentNumber)
 {
     string path = saveDirectory + fileName;
+    
     saveFile.open(path, ios::app);
     if (!saveFile.is_open()) return;
 
@@ -109,13 +141,14 @@ void FileManager::saveBallData(const vector<int>& drawnNumbers,
     saveFile << "\n";
 
     saveFile.close();
-    cout << "[FileManager] Data bola disimpan. Current: " << currentNumber << "\n";
+    cout << "[FileManager] Ball data is saved. Current: " << currentNumber << "\n";
 }
 
 void FileManager::saveCardData(const int grid[5][5],
                                const bool marked[5][5])
 {
     string path = saveDirectory + fileName;
+    
     saveFile.open(path, ios::app);
     if (!saveFile.is_open()) return;
 
@@ -129,6 +162,7 @@ void FileManager::saveCardData(const int grid[5][5],
         }
     saveFile << "\n";
 
+    // save marked
     saveFile << "MARKED=";
     for (int i = 0; i < 5; i++)
         for (int j = 0; j < 5; j++) {
@@ -138,11 +172,12 @@ void FileManager::saveCardData(const int grid[5][5],
     saveFile << "\n";
 
     saveFile.close();
-    cout << "[FileManager] Data kartu disimpan.\n";
+    cout << "[FileManager] Card data is saved.\n";
 }
 
 void FileManager::saveCurrencyData(double currentBalance, double lastWinAmount) {
     string path = saveDirectory + fileName;
+    
     saveFile.open(path, ios::app);
     if (!saveFile.is_open()) return;
 
@@ -156,6 +191,7 @@ void FileManager::saveCurrencyData(double currentBalance, double lastWinAmount) 
 
 void FileManager::saveGameData(double currentBet, int difficultyLevel) {
     string path = saveDirectory + fileName;
+    
     saveFile.open(path, ios::app);
     if (!saveFile.is_open()) return;
 
@@ -164,7 +200,7 @@ void FileManager::saveGameData(double currentBet, int difficultyLevel) {
     saveFile << "DIFFICULTY_LEVEL=" << difficultyLevel << "\n";
 
     saveFile.close();
-    cout << "[FileManager] Game data disimpan.\n";
+    cout << "[FileManager] Game data saved.\n";
 }
 
 void FileManager::loadPlayerData(string& outName, double& outBalance) {
@@ -189,7 +225,7 @@ void FileManager::loadPlayerData(string& outName, double& outBalance) {
     }
 
     loadFile.close();
-    cout << "[FileManager] Player dimuat: " << outName << "\n";
+    cout << "[FileManager] Player loaded: " << outName << "\n";
 }
 
 void FileManager::loadBallData(vector<int>& outDrawnNumbers,
@@ -223,7 +259,7 @@ void FileManager::loadBallData(vector<int>& outDrawnNumbers,
     }
 
     loadFile.close();
-    cout << "[FileManager] Bola dimuat. Total: " << outDrawnNumbers.size() << "\n";
+    cout << "[FileManager] Bola loaded. Total: " << outDrawnNumbers.size() << "\n";
 }
 
 void FileManager::loadCardData(int grid[5][5], bool marked[5][5]) {
@@ -283,7 +319,7 @@ void FileManager::loadCurrencyData(double& outBalance, double& outLastWin) {
     }
 
     loadFile.close();
-    cout << "[FileManager] Currency dimuat. Balance: " << outBalance << "\n";
+    cout << "[FileManager] Currency loaded. Balance: " << outBalance << "\n";
 }
 
 void FileManager::loadGameData(double& outBet, int& outDifficulty) {
@@ -308,15 +344,21 @@ void FileManager::loadGameData(double& outBet, int& outDifficulty) {
     }
 
     loadFile.close();
-    cout << "[FileManager] Game data dimuat.\n";
+    cout << "[FileManager] Game data loaded.\n";
 }
 
+// ============================================================
+// fileExists
+// ============================================================
 bool FileManager::fileExists() {
     string path = saveDirectory + fileName;
     ifstream f(path);
     return f.good();
 }
 
+// =================================================================
+// logEvent: Saves the log to a separate file: event_log.txt
+// ===============================================================
 void FileManager::logEvent(const string& eventDesc) {
     string path = saveDirectory + "event_log.txt";
     ofstream logFile(path, ios::app);
@@ -325,12 +367,15 @@ void FileManager::logEvent(const string& eventDesc) {
     logFile.close();
 }
 
+// =================================================================
+// validateFile: Checks whether the file exists and is not empty
+// ==============================================================
 bool FileManager::validateFile() {
     string path = saveDirectory + fileName;
     ifstream f(path);
 
     if (!f.is_open()) {
-        cout << "[FileManager] Validasi GAGAL: file tidak ditemukan.\n";
+        cout << "[FileManager] Validation FAILED: file not found.\n";
         return false;
     }
 
@@ -339,10 +384,10 @@ bool FileManager::validateFile() {
     f.close();
 
     if (empty) {
-        cout << "[FileManager] Validasi GAGAL: file kosong.\n";
+        cout << "[FileManager] ValidationFAILED: empty filr.\n";
         return false;
     }
 
-    cout << "[FileManager] Validasi OK.\n";
+    cout << "[FileManager] Validation OK.\n";
     return true;
 }
