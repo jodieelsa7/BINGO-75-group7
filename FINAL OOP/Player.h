@@ -2,14 +2,14 @@
 #define PLAYER_H
 #include <string>
 #include "Currency.h"
-#include "Card.h"
+#include "Cards.h"
 using namespace std;
 
 class Player {
 private:
 	string playerName;
 	Currency balance;
-	Card* cards;
+	Cards* cards;
 	int numCards;
 
 public:
@@ -25,21 +25,21 @@ public:
 
 	//Getters
 	string getName() const;
-	double getBalance() const;
+	Currency* retBalance();
 	int getNumCards() const;
 
 	//Card functions
-	void generateCard(int n);
+	Cards generateCard();
 	void displayCard();
 	void markNumber(int number);
-
-	//Balance functions
-	void addBalance(int amount);
-	void deductBalance(int amount);
 
 	//Player functions
 	bool hasWon();
 	void displayProfile();
+
+	//Importing and Exporting cards
+	void loadPlayerCard(int loadedGrid[5][5], bool loadedMarked[5][5]);
+	void exportCardState(int outGrid[5][5], bool outMarked[5][5]);
 
 };
 
