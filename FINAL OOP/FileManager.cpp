@@ -37,8 +37,12 @@ string FileManager::getCurrentTimestamp() {
 // =================================================================
 // saveProfile(): Creates the initial structure of the save file
 // =============================================================
-void FileManager::saveProfile() {
-    string path = saveDirectory + fileName;
+void FileManager::saveProfile(const string& playerName, double balance, 
+                               const vector<int>& drawnNumbers, int currentNumber,
+                               const int grid[5][5], const bool marked[5][5],
+                               double currentBet, int difficulty) 
+{
+    string path = saveDirectory + playerName + ".txt";
 
     saveFile.open(path);
     if (!saveFile.is_open()) {
@@ -49,27 +53,46 @@ void FileManager::saveProfile() {
     saveFile << "SAVED_AT=" << getCurrentTimestamp() << "\n";     // Timestamp save
     
     // Section structure
-    saveFile << "[PLAYER]\n";
-    saveFile << "[CURRENCY]\n";
-    saveFile << "[GAME]\n";
-    saveFile << "[BALLS]\n";
-    saveFile << "[CARD]\n";
+    saveFile << "[PLAYER]\nNAME=" << playerName << "\nBALANCE=" << balance << "\n";
 
+    // Save Data Bola
+    saveFile << "[BALLS]\nCURRENT=" << currentNumber << "\nDRAWN=";
+    for (size_t i = 0; i < drawnNumbers.size(); i++) {
+        saveFile << drawnNumbers[i] << (i < drawnNumbers.size() - 1 ? "," : "");
+    }
+    saveFile << "\n";
+
+    // Save Data Kartu (Grid & Marked)
+    saveFile << "[CARD]\nGRID=";
+    for (int i = 0; i < 5; i++) {
+        for (int j = 0; j < 5; j++) {
+            saveFile << grid[i][j] << (!(i == 4 && j == 4) ? "," : "");
+        }
+    }
+    saveFile << "\nMARKED=";
+    for (int i = 0; i < 5; i++) {
+        for (int j = 0; j < 5; j++) {
+            saveFile << (marked[i][j] ? "1" : "0") << (!(i == 4 && j == 4) ? "," : "");
+        }
+    }
+    saveFile << "\n";
+
+    // Save Data Game
+    saveFile << "[GAME]\nBET=" << currentBet << "\nDIFFICULTY=" << difficulty << "\n"
     saveFile.close();
-    cout << "[FileManager] saveProfile() finish -> " << path << "\n";
+    cout << "[FileManager] Successfully saved profile to: " << path << "\n";
 }
 
 // =================================================================
 // loadProfile()
 // Reading file contents (debugging)
 // ===============================================================
-void FileManager::loadProfile() {
-    string path = saveDirectory + fileName;
-
-    if (!fileExists()) {
-        cerr << "[FileManager] ERROR: File not found : " << path << "\n";
-        return;
-    }
+void FileManager::loadProfile(const string& playerName, double& outBalance, 
+                               vector<int>& outDrawnNumbers, int& outCurrentNumber,
+                               int grid[5][5], bool marked[5][5],
+                               double& outBet, int& outDifficulty) 
+{
+    string path = saveDirectory + playerName + ".txt";
 
     loadFile.open(path);
     if (!loadFile.is_open()) {
@@ -77,317 +100,50 @@ void FileManager::loadProfile() {
         return;
     }
 
-    string line;
-    string currentSection = "";
-
+    string line, section;
     while (getline(loadFile, line)) {
         if (line.empty()) continue;
 
         // Detection section
-        if (line[0] == '[') {
-            currentSection = line;
+        if (line[0] == '[') { section = line;
             continue;
         }
 
         size_t pos = line.find('=');
         if (pos == string::npos) continue;
-
         string key = line.substr(0, pos);
         string val = line.substr(pos + 1);
-
-        cout << "[FileManager] " << currentSection
-             << " | " << key << " = " << val << "\n";
-    }
-
-    loadFile.close();
-    cout << "[FileManager] loadProfile() finish.\n";
-}
-
-// ============================================================
-// savePlayerData
-// ============================================================
-void FileManager::savePlayerData(const string& playerName, double balance) {
-    string path = saveDirectory + fileName;
-    
-    saveFile.open(path, ios::app);
-    if (!saveFile.is_open()) return;
-
-    saveFile << "[PLAYER]\n";
-    saveFile << "NAME="    << playerName << "\n";
-    saveFile << "BALANCE=" << balance    << "\n";
-
-    saveFile.close();
-    cout << "[FileManager] Player '" << playerName << "' saved.\n";
-}
-
-// ============================================================
-// saveBallData
-// ============================================================
-void FileManager::saveBallData(const vector<int>& drawnNumbers,
-                               int currentNumber)
-{
-    string path = saveDirectory + fileName;
-    
-    saveFile.open(path, ios::app);
-    if (!saveFile.is_open()) return;
-
-    saveFile << "[BALLS]\n";
-    saveFile << "CURRENT_NUMBER=" << currentNumber << "\n";
-    saveFile << "DRAWN=";
-    for (size_t i = 0; i < drawnNumbers.size(); i++) {
-        saveFile << drawnNumbers[i];
-        if (i < drawnNumbers.size() - 1) saveFile << ",";
-    }
-    saveFile << "\n";
-
-    saveFile.close();
-    cout << "[FileManager] Ball data is saved. Current: " << currentNumber << "\n";
-}
-
-void FileManager::saveCardData(const int grid[5][5],
-                               const bool marked[5][5])
-{
-    string path = saveDirectory + fileName;
-    
-    saveFile.open(path, ios::app);
-    if (!saveFile.is_open()) return;
-
-    saveFile << "[CARD]\n";
-
-    saveFile << "GRID=";
-    for (int i = 0; i < 5; i++)
-        for (int j = 0; j < 5; j++) {
-            saveFile << grid[i][j];
-            if (!(i == 4 && j == 4)) saveFile << ",";
+if (section == "[PLAYER]" && key == "BALANCE") outBalance = stod(val);
+        else if (section == "[BALLS]") {
+            if (key == "CURRENT") outCurrentNumber = stoi(val);
+            else if (key == "DRAWN") {
+                outDrawnNumbers.clear();
+                stringstream ss(val);
+                string t;
+                while (getline(ss, t, ',')) outDrawnNumbers.push_back(stoi(t));
+            }
         }
-    saveFile << "\n";
-
-    // save marked
-    saveFile << "MARKED=";
-    for (int i = 0; i < 5; i++)
-        for (int j = 0; j < 5; j++) {
-            saveFile << marked[i][j];
-            if (!(i == 4 && j == 4)) saveFile << ",";
-        }
-    saveFile << "\n";
-
-    saveFile.close();
-    cout << "[FileManager] Card data is saved.\n";
-}
-
-void FileManager::saveCurrencyData(double currentBalance, double lastWinAmount) {
-    string path = saveDirectory + fileName;
-    
-    saveFile.open(path, ios::app);
-    if (!saveFile.is_open()) return;
-
-    saveFile << "[CURRENCY]\n";
-    saveFile << "CURRENT_BALANCE=" << currentBalance  << "\n";
-    saveFile << "LAST_WIN_AMOUNT=" << lastWinAmount   << "\n";
-
-    saveFile.close();
-    cout << "[FileManager] Currency disimpan. Balance: " << currentBalance << "\n";
-}
-
-void FileManager::saveGameData(double currentBet, int difficultyLevel) {
-    string path = saveDirectory + fileName;
-    
-    saveFile.open(path, ios::app);
-    if (!saveFile.is_open()) return;
-
-    saveFile << "[GAME]\n";
-    saveFile << "CURRENT_BET="      << currentBet      << "\n";
-    saveFile << "DIFFICULTY_LEVEL=" << difficultyLevel << "\n";
-
-    saveFile.close();
-    cout << "[FileManager] Game data saved.\n";
-}
-
-void FileManager::loadPlayerData(string& outName, double& outBalance) {
-    string path = saveDirectory + fileName;
-    loadFile.open(path);
-    if (!loadFile.is_open()) return;
-
-    string line;
-    bool inSection = false;
-    while (getline(loadFile, line)) {
-        if (line == "[PLAYER]") { inSection = true;  continue; }
-        if (!line.empty() && line[0] == '[') { inSection = false; continue; }
-        if (!inSection) continue;
-
-        size_t pos = line.find('=');
-        if (pos == string::npos) continue;
-        string key = line.substr(0, pos);
-        string val = line.substr(pos + 1);
-
-        if      (key == "NAME")    outName    = val;
-        else if (key == "BALANCE") outBalance = stod(val);
-    }
-
-    loadFile.close();
-    cout << "[FileManager] Player loaded: " << outName << "\n";
-}
-
-void FileManager::loadBallData(vector<int>& outDrawnNumbers,
-                               int& outCurrentNumber)
-{
-    string path = saveDirectory + fileName;
-    loadFile.open(path);
-    if (!loadFile.is_open()) return;
-
-    string line;
-    bool inSection = false;
-    while (getline(loadFile, line)) {
-        if (line == "[BALLS]") { inSection = true;  continue; }
-        if (!line.empty() && line[0] == '[') { inSection = false; continue; }
-        if (!inSection) continue;
-
-        size_t pos = line.find('=');
-        if (pos == string::npos) continue;
-        string key = line.substr(0, pos);
-        string val = line.substr(pos + 1);
-
-        if (key == "CURRENT_NUMBER") {
-            outCurrentNumber = stoi(val);
-        } else if (key == "DRAWN" && !val.empty()) {
-            outDrawnNumbers.clear();
+        else if (section == "[CARD]") {
             stringstream ss(val);
-            string token;
-            while (getline(ss, token, ','))
-                outDrawnNumbers.push_back(stoi(token));
-        }
-    }
-
-    loadFile.close();
-    cout << "[FileManager] Bola loaded. Total: " << outDrawnNumbers.size() << "\n";
-}
-
-void FileManager::loadCardData(int grid[5][5], bool marked[5][5]) {
-    string path = saveDirectory + fileName;
-    loadFile.open(path);
-    if (!loadFile.is_open()) return;
-
-    string line;
-    bool inSection = false;
-    while (getline(loadFile, line)) {
-        if (line == "[CARD]") { inSection = true;  continue; }
-        if (!line.empty() && line[0] == '[') { inSection = false; continue; }
-        if (!inSection) continue;
-
-        size_t pos = line.find('=');
-        if (pos == string::npos) continue;
-        string key = line.substr(0, pos);
-        string val = line.substr(pos + 1);
-
-        if (key == "GRID" || key == "MARKED") {
-            stringstream ss(val);
-            string token;
+            string t;
             int idx = 0;
-            while (getline(ss, token, ',') && idx < 25) {
-                int row = idx / 5;
-                int col = idx % 5;
-                if (key == "GRID")   grid[row][col]   = stoi(token);
-                if (key == "MARKED") marked[row][col] = (token == "1");
+            while (getline(ss, t, ',') && idx < 25) {
+                if (key == "GRID") grid[idx/5][idx%5] = stoi(t);    // (stoi means string to integers)
+else if (key == "MARKED") marked[idx/5][idx%5] = (t == "1");
                 idx++;
             }
         }
+        else if (section == "[GAME]") {
+            if (key == "BET") outBet = stod(val);
+            else if (key == "DIFFICULTY") outDifficulty = stoi(val);
+        }
     }
-
     loadFile.close();
-    cout << "[FileManager] Kartu dimuat.\n";
+    cout << "[FileManager] Profil '" << playerName << "' successfully loaded.\n";
 }
 
-void FileManager::loadCurrencyData(double& outBalance, double& outLastWin) {
-    string path = saveDirectory + fileName;
-    loadFile.open(path);
-    if (!loadFile.is_open()) return;
-
-    string line;
-    bool inSection = false;
-    while (getline(loadFile, line)) {
-        if (line == "[CURRENCY]") { inSection = true;  continue; }
-        if (!line.empty() && line[0] == '[') { inSection = false; continue; }
-        if (!inSection) continue;
-
-        size_t pos = line.find('=');
-        if (pos == string::npos) continue;
-        string key = line.substr(0, pos);
-        string val = line.substr(pos + 1);
-
-        if      (key == "CURRENT_BALANCE") outBalance = stod(val);
-        else if (key == "LAST_WIN_AMOUNT") outLastWin = stod(val);
-    }
-
-    loadFile.close();
-    cout << "[FileManager] Currency loaded. Balance: " << outBalance << "\n";
-}
-
-void FileManager::loadGameData(double& outBet, int& outDifficulty) {
-    string path = saveDirectory + fileName;
-    loadFile.open(path);
-    if (!loadFile.is_open()) return;
-
-    string line;
-    bool inSection = false;
-    while (getline(loadFile, line)) {
-        if (line == "[GAME]") { inSection = true;  continue; }
-        if (!line.empty() && line[0] == '[') { inSection = false; continue; }
-        if (!inSection) continue;
-
-        size_t pos = line.find('=');
-        if (pos == string::npos) continue;
-        string key = line.substr(0, pos);
-        string val = line.substr(pos + 1);
-
-        if      (key == "CURRENT_BET")      outBet        = stod(val);
-        else if (key == "DIFFICULTY_LEVEL") outDifficulty = stoi(val);
-    }
-
-    loadFile.close();
-    cout << "[FileManager] Game data loaded.\n";
-}
-
-// ============================================================
-// fileExists
-// ============================================================
-bool FileManager::fileExists() {
-    string path = saveDirectory + fileName;
-    ifstream f(path);
+bool FileManager::fileExists(const string& playerName) {
+ifstream f(saveDirectory + playerName + ".txt");
     return f.good();
 }
-
-// =================================================================
-// logEvent: Saves the log to a separate file: event_log.txt
-// ===============================================================
-void FileManager::logEvent(const string& eventDesc) {
-    string path = saveDirectory + "event_log.txt";
-    ofstream logFile(path, ios::app);
-    if (!logFile.is_open()) return;
-    logFile << "[" << getCurrentTimestamp() << "] " << eventDesc << "\n";
-    logFile.close();
-}
-
-// =================================================================
-// validateFile: Checks whether the file exists and is not empty
-// ==============================================================
-bool FileManager::validateFile() {
-    string path = saveDirectory + fileName;
-    ifstream f(path);
-
-    if (!f.is_open()) {
-        cout << "[FileManager] Validation FAILED: file not found.\n";
-        return false;
-    }
-
-    f.seekg(0, ios::end);
-    bool empty = (f.tellg() == 0);
-    f.close();
-
-    if (empty) {
-        cout << "[FileManager] ValidationFAILED: empty filr.\n";
-        return false;
-    }
-
-    cout << "[FileManager] Validation OK.\n";
-    return true;
-}
+        
