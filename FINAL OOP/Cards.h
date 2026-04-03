@@ -1,3 +1,14 @@
+/*
+Student Name: Jodie Elsa Soenarto
+Student ID: 251103120132
+Course: FITS1201 – Object Oriented Programming
+Assignment: Final Project – Bingo-75 Game
+Academic Integrity Declaration:
+I declare that this work is my own and that I have not copied
+code from other students, websites, or online repositories
+without proper acknowledgement.
+*/
+
 #ifndef CARDS_H
 #define CARDS_H
 
@@ -26,14 +37,19 @@ public:
 	Cards();
 
 	//Getter
-	int getGridValue(int row, int col);
-	bool getMarkedStatus(int row, int col);
+	// we MIGHT no need these getters
+	//int getGridValue(int row, int col);
+	//bool getMarkedStatus(int row, int col);
 
 	//Function Members
 	void generateCard();
 	bool markNumber(int pulledNum);
 	bool checkPatterns();
 	void displayCards();
+
+	//Importing
+	void loadCardState(int loadedGrid[5][5], bool loadedMarked[5][5]);
+	void getCardState(int outGrid[5][5], bool outMarked[5][5]);
 
 };
 
