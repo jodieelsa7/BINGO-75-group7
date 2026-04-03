@@ -1,3 +1,14 @@
+/*
+Student Name: Gabriella Renata Virgie
+Student ID: 251103130115
+Course: FITS1201 – Object Oriented Programming
+Assignment: Final Project – Bingo-75 Game
+Academic Integrity Declaration:
+I declare that this work is my own and that I have not copied
+code from other students, websites, or online repositories
+without proper acknowledgement.
+*/
+
 #include "BallAnnouncer.h"
 #include <iostream>
 #include <algorithm>
@@ -37,6 +48,16 @@ void BallAnnouncer::setDifficulty()
         cout << "Enter choice: ";
         cin >> choice;
 
+		if (choice < 1 || choice > 3)  //Checking if the input is valid or not
+		{
+			if (cin.fail()) {
+				cin.clear();
+				cin.ignore(numeric_limits<streamsize>::max(), '\n'); //Discard invalid input: https://gist.github.com/DerexScript/d4220fdd40203978f8ba80c0010fa970
+			}
+			cout << "Invalid input. Please enter an integer (preferably 1-3).\n";
+
+		}
+
     } while (choice < 1 || choice > 3);
 
     if (choice == 1) maxBalls = HARD;
@@ -56,6 +77,10 @@ void BallAnnouncer::resetPool()
         ballPool->push_back(i);
     }
 
+    /* Refs:
+	https://forum.qt.io/topic/157390/some-c-questions-about-using-random
+    https://stackoverflow.com/questions/38367976/do-stdrandom-device-and-stdmt19937-follow-an-uniform-distribution
+    */
     random_device rd;
     mt19937 g(rd());
     shuffle(ballPool->begin(), ballPool->end(), g);
@@ -95,6 +120,40 @@ void BallAnnouncer::displayNumber()
     else letter = 'O';
 
     cout << "\nNumber drawn: " << letter << " - " << currentNumber << endl;
+    displayRecent();
+	cout << endl;
+}
+
+void BallAnnouncer::displayRecent()
+{
+	cout << "Last 3 numbers: ";
+
+	int count = drawnNumber.size();
+
+	if (count == 0)
+	{
+		cout << "None\n";
+		return;
+	}
+
+	//start from max(0, count - 3)
+	int start = (count > 3) ? count - 3 : 0; //check to see if it's greater than 3. if so, then it'll display the last three item in the vector
+
+	for (int i = start; i < count; i++)
+	{
+		char letter;
+
+		if (drawnNumber[i] <= 15) letter = 'B';
+		else if (drawnNumber[i] <= 30) letter = 'I';
+		else if (drawnNumber[i] <= 45) letter = 'N';
+		else if (drawnNumber[i] <= 60) letter = 'G';
+		else letter = 'O';
+
+		cout << letter << "-" << drawnNumber[i] << " ";
+
+	}
+
+	cout << endl;
 }
 
 //Animation
@@ -108,14 +167,14 @@ void BallAnnouncer::rollingAnimation()
     }
 
     cout << "\n\nRolling the numbers. . . " << endl;            //Tried usinng <windows.h>, but it didnt work for some reason so i use an alternative
-    this_thread::sleep_for(chrono::milliseconds(200));          //Ref: https://www.geeksforgeeks.org/cpp/sleep-function-in-cpp/   genuinely a lifesaver
+    this_thread::sleep_for(chrono::milliseconds(50));          //Ref: https://www.geeksforgeeks.org/cpp/sleep-function-in-cpp/   genuinely a lifesaver
 
     for (int i = 0; i < 75; i++)
     {
         cout << "\x1b[2K";                                      //Deleting one line. Ref: https://stackoverflow.com/questions/61919292/c-how-do-i-erase-a-line-from-the-console#:~:text=2%20Answers,of%20lines%20to%20move%20up.
         cout << "\r";
         cout << "[" << Anim[i] << "]";
-        this_thread::sleep_for(chrono::milliseconds(20));
+        this_thread::sleep_for(chrono::milliseconds(10));
     }
 
     cout << "\x1b[2K";
@@ -126,4 +185,12 @@ void BallAnnouncer::rollingAnimation()
     }
     cout << "\r";
     cout << "[" << currentNumber << "]";                        //To display the actual rolled number
+}
+
+std::vector<int> BallAnnouncer::getDrawnNumbers() {
+    return drawnNumber; 
+}
+
+int BallAnnouncer::getCurrentNumber() {
+    return currentNumber; 
 }
