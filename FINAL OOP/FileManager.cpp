@@ -30,7 +30,12 @@ FileManager::~FileManager() {
 string FileManager::getCurrentTimestamp() {
     time_t now = time(nullptr);
     char buf[20];
-    strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", localtime(&now));
+    struct tm timeinfo;
+
+    // Use the secure Microsoft version to prevent Visual Studio errors
+    localtime_s(&timeinfo, &now);
+
+    strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", &timeinfo);
     return string(buf);
 }
 
@@ -47,7 +52,7 @@ void FileManager::saveProfile() {
     }
 
     saveFile << "SAVED_AT=" << getCurrentTimestamp() << "\n";     // Timestamp save
-    
+
     // Section structure
     saveFile << "[PLAYER]\n";
     saveFile << "[CURRENCY]\n";
@@ -96,7 +101,7 @@ void FileManager::loadProfile() {
         string val = line.substr(pos + 1);
 
         cout << "[FileManager] " << currentSection
-             << " | " << key << " = " << val << "\n";
+            << " | " << key << " = " << val << "\n";
     }
 
     loadFile.close();
@@ -108,13 +113,13 @@ void FileManager::loadProfile() {
 // ============================================================
 void FileManager::savePlayerData(const string& playerName, double balance) {
     string path = saveDirectory + fileName;
-    
+
     saveFile.open(path, ios::app);
     if (!saveFile.is_open()) return;
 
     saveFile << "[PLAYER]\n";
-    saveFile << "NAME="    << playerName << "\n";
-    saveFile << "BALANCE=" << balance    << "\n";
+    saveFile << "NAME=" << playerName << "\n";
+    saveFile << "BALANCE=" << balance << "\n";
 
     saveFile.close();
     cout << "[FileManager] Player '" << playerName << "' saved.\n";
@@ -124,10 +129,10 @@ void FileManager::savePlayerData(const string& playerName, double balance) {
 // saveBallData
 // ============================================================
 void FileManager::saveBallData(const vector<int>& drawnNumbers,
-                               int currentNumber)
+    int currentNumber)
 {
     string path = saveDirectory + fileName;
-    
+
     saveFile.open(path, ios::app);
     if (!saveFile.is_open()) return;
 
@@ -145,10 +150,10 @@ void FileManager::saveBallData(const vector<int>& drawnNumbers,
 }
 
 void FileManager::saveCardData(const int grid[5][5],
-                               const bool marked[5][5])
+    const bool marked[5][5])
 {
     string path = saveDirectory + fileName;
-    
+
     saveFile.open(path, ios::app);
     if (!saveFile.is_open()) return;
 
@@ -177,13 +182,13 @@ void FileManager::saveCardData(const int grid[5][5],
 
 void FileManager::saveCurrencyData(double currentBalance, double lastWinAmount) {
     string path = saveDirectory + fileName;
-    
+
     saveFile.open(path, ios::app);
     if (!saveFile.is_open()) return;
 
     saveFile << "[CURRENCY]\n";
-    saveFile << "CURRENT_BALANCE=" << currentBalance  << "\n";
-    saveFile << "LAST_WIN_AMOUNT=" << lastWinAmount   << "\n";
+    saveFile << "CURRENT_BALANCE=" << currentBalance << "\n";
+    saveFile << "LAST_WIN_AMOUNT=" << lastWinAmount << "\n";
 
     saveFile.close();
     cout << "[FileManager] Currency disimpan. Balance: " << currentBalance << "\n";
@@ -191,12 +196,12 @@ void FileManager::saveCurrencyData(double currentBalance, double lastWinAmount) 
 
 void FileManager::saveGameData(double currentBet, int difficultyLevel) {
     string path = saveDirectory + fileName;
-    
+
     saveFile.open(path, ios::app);
     if (!saveFile.is_open()) return;
 
     saveFile << "[GAME]\n";
-    saveFile << "CURRENT_BET="      << currentBet      << "\n";
+    saveFile << "CURRENT_BET=" << currentBet << "\n";
     saveFile << "DIFFICULTY_LEVEL=" << difficultyLevel << "\n";
 
     saveFile.close();
@@ -220,7 +225,7 @@ void FileManager::loadPlayerData(string& outName, double& outBalance) {
         string key = line.substr(0, pos);
         string val = line.substr(pos + 1);
 
-        if      (key == "NAME")    outName    = val;
+        if (key == "NAME")    outName = val;
         else if (key == "BALANCE") outBalance = stod(val);
     }
 
@@ -229,7 +234,7 @@ void FileManager::loadPlayerData(string& outName, double& outBalance) {
 }
 
 void FileManager::loadBallData(vector<int>& outDrawnNumbers,
-                               int& outCurrentNumber)
+    int& outCurrentNumber)
 {
     string path = saveDirectory + fileName;
     loadFile.open(path);
@@ -249,7 +254,8 @@ void FileManager::loadBallData(vector<int>& outDrawnNumbers,
 
         if (key == "CURRENT_NUMBER") {
             outCurrentNumber = stoi(val);
-        } else if (key == "DRAWN" && !val.empty()) {
+        }
+        else if (key == "DRAWN" && !val.empty()) {
             outDrawnNumbers.clear();
             stringstream ss(val);
             string token;
@@ -259,7 +265,7 @@ void FileManager::loadBallData(vector<int>& outDrawnNumbers,
     }
 
     loadFile.close();
-    cout << "[FileManager] Bola loaded. Total: " << outDrawnNumbers.size() << "\n";
+    cout << "[FileManager] Ball loaded. Total: " << outDrawnNumbers.size() << "\n";
 }
 
 void FileManager::loadCardData(int grid[5][5], bool marked[5][5]) {
@@ -286,7 +292,7 @@ void FileManager::loadCardData(int grid[5][5], bool marked[5][5]) {
             while (getline(ss, token, ',') && idx < 25) {
                 int row = idx / 5;
                 int col = idx % 5;
-                if (key == "GRID")   grid[row][col]   = stoi(token);
+                if (key == "GRID")   grid[row][col] = stoi(token);
                 if (key == "MARKED") marked[row][col] = (token == "1");
                 idx++;
             }
@@ -294,7 +300,7 @@ void FileManager::loadCardData(int grid[5][5], bool marked[5][5]) {
     }
 
     loadFile.close();
-    cout << "[FileManager] Kartu dimuat.\n";
+    cout << "[FileManager] Cards has been loaded.\n";
 }
 
 void FileManager::loadCurrencyData(double& outBalance, double& outLastWin) {
@@ -314,7 +320,7 @@ void FileManager::loadCurrencyData(double& outBalance, double& outLastWin) {
         string key = line.substr(0, pos);
         string val = line.substr(pos + 1);
 
-        if      (key == "CURRENT_BALANCE") outBalance = stod(val);
+        if (key == "CURRENT_BALANCE") outBalance = stod(val);
         else if (key == "LAST_WIN_AMOUNT") outLastWin = stod(val);
     }
 
@@ -339,7 +345,7 @@ void FileManager::loadGameData(double& outBet, int& outDifficulty) {
         string key = line.substr(0, pos);
         string val = line.substr(pos + 1);
 
-        if      (key == "CURRENT_BET")      outBet        = stod(val);
+        if (key == "CURRENT_BET")      outBet = stod(val);
         else if (key == "DIFFICULTY_LEVEL") outDifficulty = stoi(val);
     }
 
