@@ -15,7 +15,6 @@ private:
 // ADDITIONAL ATTRIBUTES (not in UML but required)
 // --------------------------------------------------------
     std::string saveDirectory;  // folder location: "saves/"
-    std::string fileName;       // file name: "profile.txt"
 
     // --------------------------------------------------------
     // HELPER PRIVATE
@@ -23,8 +22,7 @@ private:
     std::string getCurrentTimestamp();  // Adding a timestamp to the activity log (via logEvent), so that every event in the program has time information
 
 public:
-    FileManager(const std::string& directory = "saves/",
-                const std::string& file      = "profile.txt");
+    FileManager(const std::string& directory = "saves/");
     ~FileManager();
     void saveProfile();     
     void loadProfile();    
@@ -43,5 +41,4 @@ public:
     // Additional functions to assist FileManager operations
     bool fileExists();    // Checks if the save file already exists in the directory nd prevent errors when reading a non-existent file.
     void logEvent    (const std::string& eventDesc);    //Logs an event to a log file (event_log.txt), usually accompanied by a timestamp from getCurrentTimestamp() so that each activity has clear time information.
-    bool validateFile();    //ensures the file's format and data are correct, thus preventing errors or crashes during loading.
 };
