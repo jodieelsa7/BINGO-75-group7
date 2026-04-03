@@ -1,21 +1,32 @@
+/*
+Student Name: Jodie Elsa Soenarto
+Student ID: 251103120132
+Course: FITS1201 – Object Oriented Programming
+Assignment: Final Project – Bingo-75 Game
+Academic Integrity Declaration:
+I declare that this work is my own and that I have not copied
+code from other students, websites, or online repositories
+without proper acknowledgement.
+*/
+
 #include "Cards.h"
 
 Cards::Cards() {
     generateCard();
 }
 
-int Cards::getGridValue(int row, int col) {
-    return grid[row][col];
-}
-
-bool Cards::getMarkedStatus(int row, int col) { //to see if number in the position is marked or not
-    return markedPositions[row][col];
-}
+// we MIGHT no need these getters
+//int Cards::getGridValue(int row, int col) {
+//    return grid[row][col];
+//}
+//
+//bool Cards::getMarkedStatus(int row, int col) { //to see if number in the position is marked or not
+//    return markedPositions[row][col];
+//}
 
 void Cards::generateCard() {
     int numb = 0;
     vector<int> vUsedNumb;
-    srand(unsigned(time(NULL)));
 
     for (int r = 0; r < 5; r++) {
         for (int c = 0; c < 5; c++) {
@@ -193,34 +204,63 @@ bool Cards::checkPatterns() {
 }
 
 void Cards::displayCards() {
-    cout << "========================\n"
-         << YELLOW << "  B    I    N    G    O  \n" << RESETCOLOR
-         << "------------------------\n";
+	cout << "=============================================\n"
+		<< YELLOW << "      B       I       N       G       O      \n" << RESETCOLOR
+		<< "---------------------------------------------\n";
+
+	for (int r = 0; r < 5; r++) {
+		for (int c = 0; c < 5; c++) {
+            string content;
+			if (r == 2 && c == 2) {
+				content = "FREE";
+			}
+			else {
+				content = to_string(grid[r][c]);
+			}
+
+			// calculating the padding logic
+			int cellWidth = 8;
+			int totalSpaces = cellWidth - (int)content.length();
+			int leftPad = totalSpaces / 2;
+			int rightPad = totalSpaces - leftPad;
+
+			//THE DISPLAYING
+			cout << "|";
+
+			if (leftPad > 0) cout << setw(leftPad) << ""; // apply left padding using setw on an empty string
+
+			if (markedPositions[r][c] == true) {
+				cout << RED << content << RESETCOLOR;
+			}
+			else {
+				cout << content;
+			}
+
+			if (rightPad > 0) cout << setw(rightPad) << ""; // apply right padding using setw on an empty string
+
+			if (c == 4) {
+				cout << "|\n"; // right border
+				cout << "---------------------------------------------\n";
+			}
+		}
+	}
+}
+
+
+void Cards::loadCardState(int loadedGrid[5][5], bool loadedMarked[5][5]) {
     for (int r = 0; r < 5; r++) {
         for (int c = 0; c < 5; c++) {
-            string num = to_string(grid[r][c]);
-            int width = 8;
-            int padding = (width - num.length())/2;
-            if (r == 2 && c == 2) {
-                cout << "|" << RED << "" << setw(padding) << "FREE" << RESETCOLOR; //since setw() only applies to whatever that is exactly after itself, so RED should be before the setw(). i also add an empty string before the setw() so it wouldn't accidentally readh the "red" that is still on buffer
-            }
-            else if (markedPositions[r][c] == true) {
-                if (c == 0 || c == 1 || c == 2 || c == 3) {
-                    cout << "|" << RED << "" << setw(padding) << grid[r][c] << RESETCOLOR;
-                }
-                else { // if c == 4
-                    cout << "|" << RED << "" << setw(padding) << grid[r][c] << RESETCOLOR << "|\n";
-                } 
-            }
-            else { //number is not marked
-                if (c == 0 || c == 1 || c == 2 || c == 3) {
-                    cout << "|" << setw(padding) << grid[r][c];
-                }
-                else { // if c == 4
-                    cout << "|" << setw(padding) << grid[r][c] << "|\n";
-                }
+            grid[r][c] = loadedGrid[r][c];
+            markedPositions[r][c] = loadedMarked[r][c];
+        }
+    }
+}
 
-            }
+void Cards::getCardState(int outGrid[5][5], bool outMarked[5][5]) {
+    for (int r = 0; r < 5; r++) {
+        for (int c = 0; c < 5; c++) {
+            outGrid[r][c] = grid[r][c];
+            outMarked[r][c] = markedPositions[r][c];
         }
     }
 }
