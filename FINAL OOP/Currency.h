@@ -11,8 +11,8 @@ private:
 
 public:
     Currency(double start);
-    void subtractLoss(int amt);
-    void addWins(int amt);
+    void subtractLoss(double amt);
+    void addWins(double amt);
     double getBalance();
 };
 
