@@ -446,4 +446,25 @@ bool FileManager::validateFile() {
     return true;
 }
 
-void File
+void FileManager::readRules() {
+    string path = saveDirectory + "rules.txt";
+
+    ifstream file(path);
+    if (!file.is_open()){
+        cout<<"ERROR: Cannot open rules file\n";
+        return;
+    }
+
+    string line;
+
+    cout << "\n======== GAME RULES ==========\n";
+
+    while (getline(file,line)) {
+        cout << line <<endl;
+    }
+
+    cout <<"\n===============================\n";
+
+    file.close();
+}
+

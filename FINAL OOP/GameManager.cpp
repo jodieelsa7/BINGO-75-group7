@@ -31,8 +31,7 @@ GameManager::~GameManager() {
 
 void GameManager::startGame() {
     int choice;
-    std::cout << "======= BINGO-75 GAME =======" 
-              << "1. Login to Existing Profile\n"  
+    std::cout << "1. Login to Existing Profile\n"  
               << "2. Create New Profile\n"
               << "3. View Game Rules\n"
               << "4. Quit\n"
@@ -139,11 +138,22 @@ void GameManager::startGame() {
         handleBetting();
 
     }
-    else {
+    else if (choice == 2) {
         // Brand New Profile Setup
         setupPlayers();
         announcer.setDifficulty();
         handleBetting();
+    }
+
+    else if (choice == 3) {
+        fileSys.readRules();
+        std::cout<<"Press ENTER to return to the menu\n";
+        cin.ignore();
+        cin.get();
+    }
+
+    else if (choice == 4) {
+        break;
     }
 
     mainLoop(); // Start the actual game loop

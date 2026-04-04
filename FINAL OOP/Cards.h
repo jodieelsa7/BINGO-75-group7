@@ -16,7 +16,7 @@ without proper acknowledgement.
 #include <ctime>
 #include <vector>
 #include <iomanip> // to help with the grid alignment with setw -- https://www.naukri.com/code360/library/setw-cpp
-#include <string> // for string anc converting int to string -- https://www.geeksforgeeks.org/cpp/converting-number-to-string-in-cpp/
+#include <string> // for string and converting int to string -- https://www.geeksforgeeks.org/cpp/converting-number-to-string-in-cpp/
 #define RESETCOLOR "\033[0m"
 #define YELLOW  "\033[33m"
 #define BLUE "\033[34m"
@@ -44,7 +44,7 @@ public:
 	//Function Members
 	void generateCard();
 	bool markNumber(int pulledNum);
-	bool checkPatterns();
+	int checkPatterns();
 	void displayCards();
 
 	//Importing

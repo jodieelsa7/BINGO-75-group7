@@ -1,22 +1,28 @@
-/*
+/********************************************************************
+FITS1201 – Object-Oriented Programming
+UNJI GAMES Assignment – Version 1
+Academic Integrity Declaration
 Student Name: Gabriella Renata Virgie
 Student ID: 251103130115
-Course: FITS1201 – Object Oriented Programming
-Assignment: Final Project – Bingo-75 Game
-Academic Integrity Declaration:
-I declare that this work is my own and that I have not copied
-code from other students, websites, or online repositories
-without proper acknowledgement.
-*/
+Submission Date: Saturday, April 4 2026
+I declare that:
+1. This assignment is entirely my own original work.
+2. I have not copied code from other students, websites, AI tools,
+ or any external sources without proper acknowledgment.
+3. I have not used AI tools (such as ChatGPT, GitHub Copilot, or similar)
+ to generate any part of this assignment solution.
+4. I have only used AI tools, if any, for learning purposes such as
+ understanding concepts, syntax, or debugging, and not for generating
+code.
+5. Any concepts, syntax, or techniques not taught in this course have been
+ properly acknowledged with citations in the comments of my code.
+6. I understand that failure to comply with these requirements may result
+ in academic misconduct proceedings and penalties, including a mark of
+ zero for this assignment.
+Student Signature: Gabriella Renata Virgie
+********************************************************************/
 
 #include "BallAnnouncer.h"
-#include <iostream>
-#include <algorithm>
-#include <random>
-#include <chrono>
-#include <thread>
-
-using namespace std;
 
 //Constructor
 BallAnnouncer::BallAnnouncer()
@@ -48,8 +54,7 @@ void BallAnnouncer::setDifficulty()
         cout << "Enter choice: ";
         cin >> choice;
 
-		if (choice < 1 || choice > 3)  //Checking if the input is valid or not
-		{
+		if (choice < 1 || choice > 3)  //Checking if the input is valid or not. 
 			if (cin.fail()) {
 				cin.clear();
 				cin.ignore(numeric_limits<streamsize>::max(), '\n'); //Discard invalid input: https://gist.github.com/DerexScript/d4220fdd40203978f8ba80c0010fa970
@@ -137,7 +142,8 @@ void BallAnnouncer::displayRecent()
 	}
 
 	//start from max(0, count - 3)
-	int start = (count > 3) ? count - 3 : 0; //check to see if it's greater than 3. if so, then it'll display the last three item in the vector
+	int start = (count > 3) ? count - 3 : 0; //check to see if it's greater than 3. if so, then it'll display the last three item in the vector. refs: https://www.geeksforgeeks.org/cpp/cpp-ternary-or-conditional-operator/ and https://stackoverflow.com/questions/795286/what-does-the-question-mark-character-mean-in-c
+	{
 
 	for (int i = start; i < count; i++)
 	{

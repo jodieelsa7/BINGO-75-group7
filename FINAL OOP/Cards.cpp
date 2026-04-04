@@ -125,31 +125,24 @@ bool Cards::markNumber(int pulledNum) {
     return false;
 }
 
-bool Cards::checkPatterns() {
-    //horizontal
+int Cards::checkPatterns() {
+
+    //blackout
+    int unmarked = 0;
     for (int r = 0; r < 5; r++) {
-        int totalMarked = 0; // so it resets on every row
         for (int c = 0; c < 5; c++) {
-            if (markedPositions[r][c] == true){
-                totalMarked++;
+            if (markedPositions[r][c] == false) {
+                unmarked++;
             }
-        }
-        if (totalMarked == 5) {
-            return true;
         }
     }
+	if (unmarked == 0) {
+        return 5; // blackout bingo
+	}
 
-    //vertical
-    for (int c = 0; c < 5; c++) {
-        int totalMarked = 0; // so it resets on every collumn 
-        for (int r = 0; r < 5; r++) {
-            if (markedPositions[r][c] == true) {
-                totalMarked++;
-            }
-        }
-        if (totalMarked == 5) {
-            return true;
-        }
+    // four corners
+    if ((markedPositions[0][0] && markedPositions[0][4] && markedPositions[4][0] && markedPositions[4][4]) == true) {
+		return 4; // four corners bingo
     }
 
     //diagonal (top left to bottom right)
@@ -161,7 +154,7 @@ bool Cards::checkPatterns() {
     }
 
     if (diaMarked == 5) {
-        return true;
+		return 3; // diagonal bingo
     }
     else {
         diaMarked = 0; // resets
@@ -175,32 +168,39 @@ bool Cards::checkPatterns() {
     }
 
     if (diaMarked == 5) {
-        return true;
+		return 3; // diagonal bingo
     }
     else {
         diaMarked = 0;
     }
 
-    // four corners
-    if ((markedPositions[0][0] && markedPositions[0][4] && markedPositions[4][0] && markedPositions[4][4]) == true) {
-        return true;
-    }
-
-    //blackout
-    int unmarked = 0;
+    //horizontal
     for (int r = 0; r < 5; r++) {
+        int totalMarked = 0; // so it resets on every row
         for (int c = 0; c < 5; c++) {
-            if (markedPositions[r][c] == false) {
-                unmarked ++;
+            if (markedPositions[r][c] == true){
+                totalMarked++;
             }
+        }
+        if (totalMarked == 5) {
+			return 2; // horizontal bingo
         }
     }
 
-    if (unmarked == 0) {
-        return true;
+    //vertical
+    for (int c = 0; c < 5; c++) {
+        int totalMarked = 0; // so it resets on every collumn 
+        for (int r = 0; r < 5; r++) {
+            if (markedPositions[r][c] == true) {
+                totalMarked++;
+            }
+        }
+        if (totalMarked == 5) {
+            return 1; // vertical bingo
+        }
     }
 
-    return false;
+    return 0; // no bingo
 }
 
 void Cards::displayCards() {
