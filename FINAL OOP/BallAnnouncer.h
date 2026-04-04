@@ -46,8 +46,9 @@ public:
     void displayNumber();          //show the B/I/N/G/O letter + number
 	void displayRecent();          //show the 3 recent drawn numbers
     void rollingAnimation();       //rolling animation
-	std::vector<int> getDrawnNumbers(); // to return the drawn numbers vector for saving/loading purposes
+	vector<int> getDrawnNumbers(); // to return the drawn numbers vector for saving/loading purposes
 	int getCurrentNumber();         // to return the current number for saving/loading purposes
+	void loadAnnouncerState(const std::vector<int>& loadedDrawn, int loadedCurrent); // to load the announcer state from the file
 };
 
 #endif
