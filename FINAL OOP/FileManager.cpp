@@ -1,3 +1,26 @@
+/********************************************************************
+FITS1201 – Object-Oriented Programming
+UNJI GAMES Assignment – Version 1
+Academic Integrity Declaration
+Student Name: Shintya Bella Purba
+Student ID: 251103120135
+Submission Date: 4 April 2026
+I declare that:
+1. This assignment is entirely my own original work.
+2. I have not copied code from other students, websites, AI tools,
+or any external sources without proper acknowledgment.
+3. I have not used AI tools (such as ChatGPT, GitHub Copilot, or similar)
+to generate any part of this assignment solution.
+4. I have only used AI tools, if any, for learning purposes such as
+understanding concepts, syntax, or debugging, and not for generating
+code.
+5. Any concepts, syntax, or techniques not taught in this course have been
+properly acknowledged with citations in the comments of my code.
+6. I understand that failure to comply with these requirements may result
+in academic misconduct proceedings and penalties, including a mark of
+zero for this assignment.
+Student Signature: <Shintya Bella Purba>
+********************************************************************/
 #include "FileManager.h"
 #include <filesystem>   // to create directories
 using namespace std;
@@ -72,7 +95,7 @@ void FileManager::loadProfile() {
     string path = saveDirectory + fileName;
 
     if (!fileExists()) {
-        cerr << "[FileManager] ERROR: File not found : " << path << "\n";
+        cerr << "[FileManager] ERROR: File not found : " << path << "\n";   // reference: https://gemini.google.com/share/aa0ba36e5a18
         return;
     }
 
@@ -268,15 +291,25 @@ void FileManager::loadBallData(vector<int>& outDrawnNumbers,
     cout << "[FileManager] Ball loaded. Total: " << outDrawnNumbers.size() << "\n";
 }
 
-void FileManager::loadCardData(int grid[5][5], bool marked[5][5]) {
+int FileManager::loadAllCardsData(vector<SavedCard>& loadedCards) {
     string path = saveDirectory + fileName;
     loadFile.open(path);
-    if (!loadFile.is_open()) return;
+    if (!loadFile.is_open()) return 0;
 
     string line;
     bool inSection = false;
+
+    SavedCard tempCard;
+    bool hasGrid = false;
+    bool hasMarked = false;
+
     while (getline(loadFile, line)) {
-        if (line == "[CARD]") { inSection = true;  continue; }
+        if (line == "[CARD]") {
+            inSection = true;
+            hasGrid = false;
+            hasMarked = false;
+            continue;
+        }
         if (!line.empty() && line[0] == '[') { inSection = false; continue; }
         if (!inSection) continue;
 
@@ -292,15 +325,30 @@ void FileManager::loadCardData(int grid[5][5], bool marked[5][5]) {
             while (getline(ss, token, ',') && idx < 25) {
                 int row = idx / 5;
                 int col = idx % 5;
-                if (key == "GRID")   grid[row][col] = stoi(token);
-                if (key == "MARKED") marked[row][col] = (token == "1");
+                if (key == "GRID") {
+                    tempCard.grid[row][col] = stoi(token);
+                }
+                if (key == "MARKED") {
+                    tempCard.marked[row][col] = (token == "1");
+                }
                 idx++;
+            }
+
+            if (key == "GRID") hasGrid = true;
+            if (key == "MARKED") hasMarked = true;
+
+            // Once both GRID and MARKED are loaded for this section, save it to the list!
+            if (hasGrid && hasMarked) {
+                loadedCards.push_back(tempCard);
+                hasGrid = false;
+                hasMarked = false;
             }
         }
     }
 
     loadFile.close();
-    cout << "[FileManager] Cards has been loaded.\n";
+    cout << "[FileManager] Cards loaded: " << loadedCards.size() << "\n";
+    return (int)loadedCards.size();
 }
 
 void FileManager::loadCurrencyData(double& outBalance, double& outLastWin) {
@@ -390,10 +438,12 @@ bool FileManager::validateFile() {
     f.close();
 
     if (empty) {
-        cout << "[FileManager] ValidationFAILED: empty filr.\n";
+        cout << "[FileManager] ValidationFAILED: empty file.\n";
         return false;
     }
 
     cout << "[FileManager] Validation OK.\n";
     return true;
 }
+
+void File
