@@ -31,7 +31,7 @@ private:
     int noOfCards;
 
     // Helper methods for modularity
-    void setupPlayers();
+    void setupPlayers(int numPlayers);
     void handleBetting();
     void saveGameState();
     bool checkAnyWinner();
