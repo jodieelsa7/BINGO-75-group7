@@ -187,10 +187,15 @@ void BallAnnouncer::rollingAnimation()
     cout << "[" << currentNumber << "]";                        //To display the actual rolled number
 }
 
-std::vector<int> BallAnnouncer::getDrawnNumbers() {
+vector<int> BallAnnouncer::getDrawnNumbers() {
     return drawnNumber; 
 }
 
 int BallAnnouncer::getCurrentNumber() {
     return currentNumber; 
+}
+
+void BallAnnouncer::loadAnnouncerState(const std::vector<int>& loadedDrawn, int loadedCurrent) {
+    drawnNumber = loadedDrawn;     // Restores the history vector
+    currentNumber = loadedCurrent; // Restores the number currently on screen
 }
