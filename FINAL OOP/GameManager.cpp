@@ -1,17 +1,28 @@
-/*
+/********************************************************************
+FITS1201 – Object-Oriented Programming
+Academic Integrity Declaration
 Student Name: Jonathan Gouw Alexandrio
-Student ID: 251103130124
-Course: FITS1201 – Object Oriented Programming
-Assignment: Final Project – Bingo-75 Game
-Academic Integrity Declaration:
-I declare that this work is my own and that I have not copied
-code from other students, websites, or online repositories
-without proper acknowledgement.
-*/
-
+Student ID:   2511103130124
+Submission Date: 4 April 2026
+I declare that:
+1. This assignment is entirely my own original work.
+2. I have not copied code from other students, websites, AI tools,
+or any external sources without proper acknowledgment.
+3. I have not used AI tools (such as ChatGPT, GitHub Copilot, or similar)
+to generate any part of this assignment solution.
+4. I have only used AI tools, if any, for learning purposes such as
+understanding concepts, syntax, or debugging, and not for generating
+code.
+5. Any concepts, syntax, or techniques not taught in this course have been
+properly acknowledged with citations in the comments of my code.
+6. I understand that failure to comply with these requirements may result
+in academic misconduct proceedings and penalties, including a mark of
+zero for this assignment.
+Student Signature: Jonathan Gouw Alexandrio
+********************************************************************/
 #include "GameManager.h"
 
-GameManager::GameManager() : totalPot(0), difficulty(2), isMultiplayer(false) {}
+GameManager::GameManager() : totalPot(0), difficulty(2), isMultiplayer(false), noOfCards(1) {}
 
 GameManager::~GameManager() {
     for (Player* p : players) delete p;
@@ -20,8 +31,11 @@ GameManager::~GameManager() {
 
 void GameManager::startGame() {
     int choice;
-    std::cout << "1. Login to Existing Profile\n" 
+    std::cout << "======= BINGO-75 GAME =======" 
+              << "1. Login to Existing Profile\n"  
               << "2. Create New Profile\n"
+              << "3. View Game Rules\n"
+              << "4. Quit\n"
               << "Choice: ";
     std::cin >> choice;
 
@@ -56,10 +70,28 @@ void GameManager::startGame() {
                 p->setBalance(loadedBalance);
 
                 // Load the exact card markings from the file
-                int grid[5][5];
-                bool marked[5][5];
-                fileSys.loadCardData(grid, marked);
-                p->loadPlayerCard(grid, marked);
+                std::vector<SavedCard> savedCards;
+                int loadedCardCount = fileSys.loadAllCardsData(savedCards);
+
+                if (loadedCardCount > 0) {
+                    p->generateCard(loadedCardCount); // Tell Player to make enough room
+                    this->noOfCards = loadedCardCount;
+
+                    // Inject the data into every card using our vector!
+                    for (int i = 0; i < loadedCardCount; i++) {
+                        p->loadPlayerCard(i, savedCards[i].grid, savedCards[i].marked);
+                    }
+                }
+                else {
+                    p->generateCard(1); // Safe fallback
+                    this->noOfCards = 1;
+                }
+
+				// loads the drawn numbers and current number into the announcer
+                std::vector<int> loadedDrawn;
+                int loadedCurrent = 0;
+                fileSys.loadBallData(loadedDrawn, loadedCurrent);
+                announcer.loadAnnouncerState(loadedDrawn, loadedCurrent);
 
                 players.push_back(p);
                 isMultiplayer = false;
@@ -101,9 +133,7 @@ void GameManager::startGame() {
         int cardsChoice;
         std::cout << "How many cards do you want? (up to 4): ";
         std::cin >> cardsChoice;
-        for (int i = 0; i < cardsChoice; i++) {
-            playerCards.push_back(p->generateCard());
-		}
+		p->generateCard(cardsChoice);
 
         announcer.setDifficulty();
         handleBetting();
@@ -135,12 +165,8 @@ void GameManager::setupPlayers() {
         if (!isMultiplayer) {
             std::cout << "How many cards do you want? (up to 4): ";
             std::cin >> noOfCards;
-            for (int i = 0; i < noOfCards; i++) {
-                playerCards.push_back(p->generateCard());
-            }
+            p->generateCard(noOfCards);
         }
-        else playerCards.push_back(p->generateCard());
-
         // Ensure player has enough balance to play 
         if (p-> retBalance()->getBalance() < 10) {
             std::cout << "Insufficient balance for " << name << ". Redirecting to menu." << std::endl;
@@ -180,55 +206,134 @@ void GameManager::processWinner(Player* winner) {
     std::cout << "BINGO! " << winner->getName() << " won " << reward << " credits!" << std::endl;
 }
 
-void GameManager::mainLoop() {
-    bool gameOver = false;
-    while (!gameOver) {
-        int choice;
-        std::cout << "\n1. Draw Number\n2. Save & Quit\nChoice: ";
+bool GameManager::inGameMenu() {
+    int choice;
+    while (true) {
+        std::cout << "\n===================================\n";
+        std::cout << "             MAIN MENU             \n";
+        std::cout << "===================================\n";
+
+		for (Player* p : players)
+		p->displayProfile();
+
+        std::cout << "1. Continue Playing\n";
+        std::cout << "2. Save and Quit\n";
+        std::cout << "Choice: ";
         std::cin >> choice;
 
-        switch (choice) {
-        case 1: {
-            std::system("cls");
-            //std::cout << "\033[2J\033[H";
-            int drawn = announcer.generateNumber();
-            if (drawn == -1) {
-                std::cout << "Game Over: No more balls!\n";
-                gameOver = true;
-                break;
-            }
-            announcer.rollingAnimation();
+        if (choice == 1) {
+            std::cout << "\nReturning to the game...\n";
+            // Re-display the board so the player can re-orient themselves
             announcer.displayNumber();
-
             for (Player* p : players) {
-                p->markNumber(drawn);
-                if (noOfCards > 1) {
-					std::cout << p->getName() << "'s Cards:\n";
-                    for (int i = 0; i < noOfCards; i++) {
-                        playerCards[i].markNumber(drawn);
-                        playerCards[i].displayCards();
-					}
-				}
-                else {
-                    playerCards[0].markNumber(drawn);
-                    playerCards[0].displayCards();
-                };
-                if (p->hasWon()) {
-                    std::cout << "BINGO! " << p->getName() << " wins " << totalPot << "!\n";
-                    processWinner(p);
-                    gameOver = true;
-
-                }
+                p->displayCard();
             }
-            break;
+            return true; // Tells the mainLoop to keep going
         }
-        case 2:
-            saveGameState();
-            gameOver = true;
-            break;
+        else if (choice == 2) {
+            saveGameState(); // Final save before exiting
+            return false;    // Tells the mainLoop to trigger Game Over
+        }
+        else {
+            std::cout << "Invalid choice. Please enter 1 or 2.\n";
         }
     }
 }
+
+void GameManager::mainLoop() {
+    bool manualQuit = false;
+    bool playAgain = true;
+
+    while (playAgain) {
+        bool gameOver = false;
+        while (!gameOver) {
+            int choice;
+            std::cout << "\n1. Draw Number\n2. Return to main menu\nChoice: ";
+            std::cin >> choice;
+
+            switch (choice) {
+            case 1: {
+                std::system("cls");
+                //std::cout << "\033[2J\033[H";
+                int drawn = announcer.generateNumber();
+                if (drawn == -1) {
+                    std::cout << "Game Over: No more balls!\n";
+                    gameOver = true;
+                    break;
+                }
+                announcer.rollingAnimation();
+                announcer.displayNumber();
+
+                for (Player* p : players) {
+                    p->markNumber(drawn); // Automatically marks all of the player's cards
+                    p->displayCard();     // Automatically prints all of the player's cards perfectly!
+
+                    if (p->hasWon()) {    // Automatically checks all of the player's cards
+                        std::cout
+                            << "888      d8b                         " << "\n"
+                            << "888      Y8P                         " << "\n"
+                            << "888                                 " << "\n"
+                            << "88888b.  888 88888b.  .d88b.     .d88b.  " << "\n"
+                            << "888  \"88b888 88   88bd88P  \"88bd88\"  \"88b " << "\n"
+                            << "888   888888 888  888888    88888.    888 " << "\n"
+                            << "888  d88P888 888  888Y88b   888Y88.  .88P " << "\n"
+                            << "88888P\"  888 888  888 \"Y888888P  \"Y88P\"		" << "\n"
+                            << "                            888         " << "\n"
+                            << "                       Y8b d88P        " << "\n"
+                            << "                        \"Y88P\"" << "\n"
+                            ;
+                        processWinner(p);
+                        gameOver = true;
+                    }
+                }
+                break;
+            }
+            case 2:
+                std::cout << "\nSaving current progress...\n";
+                saveGameState();
+                if (!inGameMenu()) {
+                    gameOver = true;
+                    manualQuit = true;
+                }
+                break;
+            }
+        }
+        if (manualQuit) {
+            std::cout << "Thanks for playing! Goodbye!\n";
+            playAgain = false;
+            break;
+        }
+        else {
+            char replayChoice;
+            std::cout << "\nDo you want to play again? (y/n): ";
+            std::cin >> replayChoice;
+			if (replayChoice == 'y' || replayChoice == 'Y') {
+                // Reset game state for a new game
+                announcer.resetPool();
+                totalPot = 0;
+                for (Player* p : players) {
+                    if (p->retBalance()->getBalance() < 10) {
+                        std::cout << p->getName() << " has insufficient balance to continue. Please add more credits.\n";
+                        double amount;
+                        std::cout << "Enter amount to add for " << p->getName() << ": ";
+                        std::cin >> amount;
+                        p-> retBalance()->addWins(amount);
+						std::cout << "New Balance: " << p->retBalance()->getBalance() << " credits\n";
+                    }
+                    p->generateCard(noOfCards); // Regenerate cards with the same number of cards as before
+                }
+                announcer.setDifficulty();
+				handleBetting();
+            }
+            else {
+                fileSys.saveProfile();
+                for (Player* p : players) fileSys.savePlayerData(p->getName(), p->retBalance()->getBalance());
+                std::cout << "Thanks for playing! Goodbye!\n";
+                playAgain = false;
+            }
+        }
+    }
+};
 
 void GameManager::saveGameState() {
     //Overwrite the old file to create a fresh save structure
@@ -240,17 +345,20 @@ void GameManager::saveGameState() {
     //Save the announced balls and the current number
     fileSys.saveBallData(announcer.getDrawnNumbers(), announcer.getCurrentNumber());
 
-    // Save the player's info and card state
+    //Save the player's info and card state
     for (Player* p : players) {
         fileSys.savePlayerData(p->getName(), p->retBalance()->getBalance());
 
         if (p->getNumCards() > 0) {
-            int grid[5][5];
-            bool marked[5][5];
-            p->exportCardState(grid, marked); // Grab the arrays from Player
-            fileSys.saveCardData(grid, marked); // Write them to profile.txt
+            for (int i = 0; i < p->getNumCards(); i++) {
+                int grid[5][5];
+                bool marked[5][5];
+                p->exportCardState(i, grid, marked);
+                fileSys.saveCardData(grid, marked);
+            }
         }
         break; // Save only Player 1 for single-player profile continuation
     }
     std::cout << "Game Progress Saved securely to your profile.\n";
-}
+} 
+
