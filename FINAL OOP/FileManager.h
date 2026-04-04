@@ -1,3 +1,27 @@
+/********************************************************************
+FITS1201 – Object-Oriented Programming
+UNJI GAMES Assignment – Version 1
+Academic Integrity Declaration
+Student Name: Shintya Bella Purba
+Student ID: 251103120135
+Submission Date: 4 April 2026
+I declare that:
+1. This assignment is entirely my own original work.
+2. I have not copied code from other students, websites, AI tools,
+or any external sources without proper acknowledgment.
+3. I have not used AI tools (such as ChatGPT, GitHub Copilot, or similar)
+to generate any part of this assignment solution.
+4. I have only used AI tools, if any, for learning purposes such as
+understanding concepts, syntax, or debugging, and not for generating
+code.
+5. Any concepts, syntax, or techniques not taught in this course have been
+properly acknowledged with citations in the comments of my code.
+6. I understand that failure to comply with these requirements may result
+in academic misconduct proceedings and penalties, including a mark of
+zero for this assignment.
+Student Signature: <Shintya Bella Purba>
+********************************************************************/
+
 #ifndef FILEMANAGER_H
 #define FILEMANAGER_H
 
@@ -7,6 +31,11 @@
 #include <string>
 #include <vector>
 #include <ctime>
+
+struct SavedCard {
+    int grid[5][5] = { 0 };
+    bool marked[5][5] = { false };
+};
 
 class FileManager {
 private:
@@ -29,7 +58,7 @@ public:
                 const std::string& file      = "profile.txt");
     ~FileManager();
     void saveProfile();     
-    void loadProfile();    
+    void loadProfile(); 
     void savePlayerData  (const std::string& playerName, double balance);
     void saveBallData    (const std::vector<int>& drawnNumbers, int currentNumber);
     void saveCardData    (const int grid[5][5], const bool marked[5][5]);
@@ -37,9 +66,10 @@ public:
     void saveGameData    (double currentBet, int difficultyLevel);
     void loadPlayerData  (std::string& outName, double& outBalance);
     void loadBallData    (std::vector<int>& outDrawnNumbers, int& outCurrentNumber);
-    void loadCardData    (int grid[5][5], bool marked[5][5]);
+    int loadAllCardsData(std::vector<SavedCard>& loadedCards);
     void loadCurrencyData(double& outBalance, double& outLastWin);
     void loadGameData    (double& outBet, int& outDifficulty);
+    void readRules();
 
     // Utility
     // Additional functions to assist FileManager operations
