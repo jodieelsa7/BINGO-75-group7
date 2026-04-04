@@ -2,7 +2,7 @@
 FITS1201 – Object-Oriented Programming
 Academic Integrity Declaration
 Student Name: Jonathan Gouw Alexandrio
-Student ID:   2511103130124
+Student ID:   2511103130124 
 Submission Date: 4 April 2026
 I declare that:
 1. This assignment is entirely my own original work.
@@ -31,18 +31,32 @@ GameManager::~GameManager() {
 
 void GameManager::startGame() {
     int choice;
-    std::cout << "1. Login to Existing Profile\n"  
-              << "2. Create New Profile\n"
-              << "3. View Game Rules\n"
-              << "4. Quit\n"
-              << "Choice: ";
-    std::cin >> choice;
+    bool validChoice = false;
+    while  (!validChoice) {
+        std::cout << "1. Login to singleplayer profile\n"  
+                  << "2. Create New singleplayer profile\n"
+                  << "3. Play multiplayer GameManager\n"
+                  << "4. View Game Rules\n"
+                  << "5. Quit\n"
+                  << "Choice: ";
+        std::cin >> choice;
+        if (cin.fail()) {
+            cin.clear();
+            cin.ignore(10000, '\n');
+            cout << "Invalid input" << endl;
+        }
+        else if (choice <= 0 && choice >= 6)
+            cout << "Please input a number from 1-5" << endl;
+
+        else validChoice = true;
+    }
 
     if (choice == 1 && fileSys.validateFile()) {
         std::string loadedName;
         double loadedBalance;
         fileSys.loadPlayerData(loadedName, loadedBalance);
 
+        std::system("cls");
         std::cout << "\n===================================\n";
         std::cout << "Welcome back, " << loadedName << "!\n";
         std::cout << "Current Balance: " << loadedBalance << " credits\n";
@@ -140,30 +154,41 @@ void GameManager::startGame() {
     }
     else if (choice == 2) {
         // Brand New Profile Setup
-        setupPlayers();
+        setupPlayers(1);
         announcer.setDifficulty();
         handleBetting();
     }
 
-    else if (choice == 3) {
+	else if (choice == 3) {
+		// Multiplayer game
+		setupPlayers(2);
+		announcer.setDifficulty();
+		handleBetting();
+	}
+
+    else if (choice == 4) {
         fileSys.readRules();
         std::cout<<"Press ENTER to return to the menu\n";
         cin.ignore();
         cin.get();
     }
 
-    else if (choice == 4) {
-        break;
+    else if (choice == 5) {
+		system("pause");
     }
 
     mainLoop(); // Start the actual game loop
+    
+    
+
 }
 
-void GameManager::setupPlayers() {
-    int numPlayers;
-    std::cout << "Enter number of players (1-4): ";
-    std::cin >> numPlayers;
+void GameManager::setupPlayers(int numPlayers) {
     isMultiplayer = (numPlayers > 1);
+    if (isMultiplayer){
+        std::cout << "Enter number of players (1-4): ";
+        std::cin >> numPlayers;
+    }
 
     for (int i = 0; i < numPlayers; i++) {
         std::string name;
@@ -189,11 +214,30 @@ void GameManager::setupPlayers() {
 void GameManager::handleBetting() {
     for (Player* p : players) {
         double bet;
-        std::cout << p->getName() << ", enter bet (multiples of 10): ";
-        std::cin >> bet;
-        p-> retBalance()->subtractLoss(bet);
-        totalPot += bet;
-        currentBet = bet;
+        bool validBet = false;
+        p->displayProfile();
+        while (!validBet) {
+            std::cout << p->getName() << ", enter bet (multiples of 10): ";
+            std::cin >> bet;
+            if (bet <= 0)
+                std::cout << "Your bet must be greater than 0" << endl;
+            else if (cin.fail()) {   //used cin.fail for input validation ref:https://stackoverflow.com/questions/5131647/why-would-we-call-cin-clear-and-cin-ignore-after-reading-input#:~:text=The%20cin.,not%20cause%20another%20parse%20failure).ail()%20%7D 
+                std::cin.clear();
+                std::cin.ignore(10000, '\n');
+                std::cout << "Invalid input. Please enter a valid number.\n";
+            }
+            else if (static_cast<int>(bet) % 10 != 0 || bet != static_cast<int>(bet)) { // catches if user inputs non multiples of 10 / any decimal points (like 10.5)
+                std::cout << "Your bet must be in multiples of 10 (10, 20, 30, etc.).\n";
+            }
+            else if (bet > p->retBalance()->getBalance()) {
+                std::cout << "Insufficient funds! You only have " << p->retBalance()->getBalance() << " credits.\n";
+            }
+            else validBet = true;
+        }
+
+		p->retBalance()->subtractLoss(bet);
+		totalPot += bet;
+		currentBet = bet;
     }
 }
 

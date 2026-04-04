@@ -32,8 +32,7 @@ private:
 // ADDITIONAL ATTRIBUTES (not in UML but required)
 // --------------------------------------------------------
     std::string saveDirectory;  // folder location: "saves/"
-    std::string fileName;       // file name: "profile.txt"
-
+    std::string fileName;       
     // --------------------------------------------------------
     // HELPER PRIVATE
     // --------------------------------------------------------

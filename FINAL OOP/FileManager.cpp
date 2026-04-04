@@ -31,7 +31,7 @@ using namespace std;
 // If the folder doesn't exist, it will be created automatically.
 // ==============================================================
 FileManager::FileManager(const string& directory, const string& file)
-    : saveDirectory(directory), fileName(file)
+    : saveDirectory(directory), fileName(file)      // reference: https://en.cppreference.com/w/cpp/language/initializer_list.html
 {
     std::filesystem::create_directories(saveDirectory);    // Create a directory to store game files and use the filesystem to run on all operating systems.
     cout << "[FileManager] Finish. File: " << saveDirectory + fileName << "\n";
@@ -58,7 +58,7 @@ string FileManager::getCurrentTimestamp() {
     // Use the secure Microsoft version to prevent Visual Studio errors
     localtime_s(&timeinfo, &now);
 
-    strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", &timeinfo);
+    strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", &timeinfo);     // Reference: https://en.cppreference.com/w/cpp/chrono/c/strftime
     return string(buf);
 }
 
@@ -319,7 +319,7 @@ int FileManager::loadAllCardsData(vector<SavedCard>& loadedCards) {
         string val = line.substr(pos + 1);
 
         if (key == "GRID" || key == "MARKED") {
-            stringstream ss(val);
+            stringstream ss(val);   // Reference: https://en.cppreference.com/w/cpp/io/basic_stringstream.html
             string token;
             int idx = 0;
             while (getline(ss, token, ',') && idx < 25) {
@@ -368,7 +368,7 @@ void FileManager::loadCurrencyData(double& outBalance, double& outLastWin) {
         string key = line.substr(0, pos);
         string val = line.substr(pos + 1);
 
-        if (key == "CURRENT_BALANCE") outBalance = stod(val);
+        if (key == "CURRENT_BALANCE") outBalance = stod(val);   // Reference: https://en.cppreference.com/w/cpp/string/basic_string/stol
         else if (key == "LAST_WIN_AMOUNT") outLastWin = stod(val);
     }
 
@@ -447,6 +447,7 @@ bool FileManager::validateFile() {
 }
 
 void FileManager::readRules() {
+
     string path = saveDirectory + "rules.txt";
 
     ifstream file(path);
